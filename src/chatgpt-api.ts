@@ -137,7 +137,7 @@ export class ChatGPTAPI {
   async sendMessage(
     text: string,
     opts: types.SendMessageOptions = {}
-  ): Promise<types.ChatMessage> {
+  ): Promise<types.ChatMessageWithPrompt> {
     const {
       parentMessageId,
       messageId = uuidv4(),
@@ -179,7 +179,12 @@ export class ChatGPTAPI {
       text: ''
     }
 
-    const responseP = new Promise<types.ChatMessage>(
+    const resultWithPrompt: types.ChatMessageWithPrompt = {
+      chatMessage: undefined,
+      prompt: messages
+    }
+
+    const responseP = new Promise<types.ChatMessageWithPrompt>(
       async (resolve, reject) => {
         const url = `${this._apiBaseUrl}/chat/completions`
         const headers = {
@@ -215,7 +220,8 @@ export class ChatGPTAPI {
               onMessage: (data: string) => {
                 if (data === '[DONE]') {
                   result.text = result.text.trim()
-                  return resolve(result)
+                  resultWithPrompt.chatMessage = result
+                  return resolve(resultWithPrompt)
                 }
 
                 try {
@@ -295,18 +301,21 @@ export class ChatGPTAPI {
 
             result.detail = response
 
-            return resolve(result)
+            resultWithPrompt.chatMessage = result
+            return resolve(resultWithPrompt)
           } catch (err) {
             return reject(err)
           }
         }
       }
     ).then(async (message) => {
-      if (message.detail && !message.detail.usage) {
+      if (message.chatMessage.detail && !message.chatMessage.detail.usage) {
         try {
           const promptTokens = numTokens
-          const completionTokens = await this._getTokenCount(message.text)
-          message.detail.usage = {
+          const completionTokens = await this._getTokenCount(
+            message.chatMessage.text
+          )
+          message.chatMessage.detail.usage = {
             prompt_tokens: promptTokens,
             completion_tokens: completionTokens,
             total_tokens: promptTokens + completionTokens,
@@ -320,7 +329,7 @@ export class ChatGPTAPI {
 
       return Promise.all([
         this._upsertMessage(latestQuestion),
-        this._upsertMessage(message)
+        this._upsertMessage(message.chatMessage)
       ]).then(() => message)
     })
 

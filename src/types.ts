@@ -79,6 +79,11 @@ export interface ChatMessage {
   conversationId?: string
 }
 
+export interface ChatMessageWithPrompt {
+  chatMessage: ChatMessage
+  prompt?: Array<openai.ChatCompletionRequestMessage>
+}
+
 export class ChatGPTError extends Error {
   statusCode?: number
   statusText?: string
