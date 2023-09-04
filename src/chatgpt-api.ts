@@ -435,14 +435,20 @@ export class ChatGPTAPI {
 
       const parentMessageRole = parentMessage.role || 'user'
 
-      nextMessages = nextMessages.slice(0, systemMessageOffset).concat([
-        {
-          role: parentMessageRole,
-          content: parentMessage.text
-          // name: parentMessage.name
-        },
-        ...nextMessages.slice(systemMessageOffset)
-      ])
+      nextMessages.unshift({
+        role: parentMessageRole,
+        content: parentMessage.text
+        // name: parentMessage.name
+      })
+
+      // nextMessages = nextMessages.slice(0, systemMessageOffset).concat([
+      //   {
+      //     role: parentMessageRole,
+      //     content: parentMessage.text,
+      //     // name: parentMessage.name
+      //   },
+      //   ...nextMessages.slice(systemMessageOffset)
+      // ])
 
       parentMessageId = parentMessage.parentMessageId
     } while (true)
