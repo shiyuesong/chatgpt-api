@@ -210,6 +210,7 @@ export namespace openai {
         finish_reason: string | null
       }
     ]
+    usage?: CreateCompletionResponseUsage
   }
 
   /**
@@ -237,6 +238,15 @@ export namespace openai {
      */
     name?: string
   }
+  export interface ChatCompletionRequestStreamOptions {
+    /**
+     * If set, an additional chunk will be streamed before the data: [DONE] message.
+     * @type {boolean}
+     * @memberof ChatCompletionRequestStreamOptions
+     */
+    include_usage: boolean
+  }
+
   export declare const ChatCompletionRequestMessageRoleEnum: {
     readonly System: 'system'
     readonly User: 'user'
@@ -312,6 +322,10 @@ export namespace openai {
      * @memberof CreateChatCompletionRequest
      */
     stream?: boolean | null
+    /**
+     * Options for streaming response. Only set this when you set stream: true
+     */
+    stream_options?: ChatCompletionRequestStreamOptions
     /**
      *
      * @type {CreateChatCompletionRequestStop}

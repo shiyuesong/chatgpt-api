@@ -148,6 +148,9 @@ export class ChatGPTAPI {
       conversationId
     } = opts
 
+    const streamOptions: types.openai.ChatCompletionRequestStreamOptions =
+      stream ? { include_usage: true } : undefined
+
     let { abortSignal } = opts
 
     let abortController: AbortController = null
@@ -196,7 +199,8 @@ export class ChatGPTAPI {
           ...this._completionParams,
           ...completionParams,
           messages,
-          stream
+          stream,
+          stream_options: streamOptions
         }
 
         // Support multiple organizations
@@ -243,6 +247,10 @@ export class ChatGPTAPI {
 
                     result.detail = response
                     onProgress?.(result)
+                  }
+
+                  if (response.usage) {
+                    result.detail.usage = response.usage
                   }
                 } catch (err) {
                   console.warn('OpenAI stream SEE event unexpected error', err)
